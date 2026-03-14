@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FREE FIRE - Battlegrounds Mobile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #0a0c14;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            max-height: 900px;
+            background: linear-gradient(145deg, #1a1e2b, #0f1219);
+            border-radius: 30px;
+            box-shadow: 0 25px 50px -10px rgba(0,0,0,0.8);
+            overflow: hidden;
+            position: relative;
+            border: 2px solid rgba(255,107,0,0.3);
+        }
+
+        /* Splash Screen */
+        .splash-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #ff6b00, #ff3d00);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeOut 0.5s ease-out 2.5s forwards;
+        }
+
+        .splash-content {
+            text-align: center;
+            color: white;
+        }
+
+        .splash-logo {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 30px;
+            margin: 0 auto 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 60px;
+            font-weight: bold;
+            color: #ff6b00;
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 0 30px rgba(255,255,255,0.5);
+        }
+
+        .splash-title {
+            font-size: 36px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .splash-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            width: 250px;
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: white;
+            animation: load 2s ease-out forwards;
+        }
+
+        /* Main Game */
+        .game-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0f1219;
+        }
+
+        /* HUD Top */
+        .hud-top {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .match-info {
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            padding: 8px 15px;
+            border-radius: 50px;
+            display: flex;
+            gap: 15px;
+            border: 1px solid rgba(255,107,0,0.5);
+        }
+
+        .mode-badge {
+            color: #ff6b00;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .players-alive {
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .players-alive::before {
+            content: '👥';
+            margin-right: 5px;
+        }
+
+        .timer {
+            color: #ff6b00;
+            font-weight: bold;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .mini-map {
+            width: 60px;
+            height: 60px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 2px solid #ff6b00;
+        }
+
+        /* Player Stats */
+        .player-stats {
+            position: absolute;
+            top: 80px;
+            left: 15px;
+            width: 200px;
+            z-index: 10;
+        }
+
+        .stat-container {
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 5px;
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        .health-bar {
+            height: 15px;
+            background: linear-gradient(90deg, #ff4757, #ff6b81);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+            width: 100%;
+        }
+
+        .armor-bar {
+            height: 15px;
+            background: linear-gradient(90deg, #4a90e2, #5aa9e6);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+            width: 100%;
+        }
+
+        .stat-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            text-shadow: 0 0 5px black;
+        }
+
+        /* Weapons Panel */
+        .weapons-panel {
+            position: absolute;
+            bottom: 150px;
+            left: 15px;
+            right: 15px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            padding: 10px;
+            border-radius: 50px;
+            border: 2px solid #ff6b00;
+        }
+
+        .weapon-slot {
+            flex: 1;
+            height: 60px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .weapon-slot.active {
+            border-color: #ff6b00;
+            background: rgba(255,107,0,0.3);
+            transform: scale(1.05);
+        }
+
+        .weapon-slot i {
+            font-size: 24px;
+            color: #ff6b00;
+            margin-bottom: 2px;
+        }
+
+        .ammo-count {
+            font-size: 10px;
+            color: #aaa;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            position: absolute;
+            bottom: 30px;
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .fire-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff4757, #8b0000);
+            border: 4px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(255,71,87,0.5);
+            transition: all 0.1s ease;
+        }
+
+        .fire-btn:active {
+            transform: scale(0.9);
+        }
+
+        .action-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px);
+            border: 2px solid #ff6b00;
+            color: white;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+
+        .action-btn:active {
+            background: #ff6b00;
+        }
+
+        /* Movement Pad */
+        .movement-pad {
+            position: absolute;
+            bottom: 30px;
+            left: 15px;
+            width: 140px;
+            height: 140px;
+            z-index: 10;
+        }
+
+        .move-zone {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .move-btn {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px);
+            border: 2px solid #ff6b00;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+
+        .move-btn:active {
+            background: #ff6b00;
+        }
+
+        .move-up { top: 0; left: 40px; }
+        .move-left { top: 40px; left: 0; }
+        .move-down { top: 40px; left: 40px; }
+        .move-right { top: 40px; left: 80px; }
+
+        /* Inventory */
+        .inventory {
+            position: absolute;
+            top: 150px;
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .inventory-item {
+            width: 50px;
+            height: 50px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            position: relative;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+            font-size: 10px;
+        }
+
+        .inventory-item i {
+            font-size: 20px;
+            color: #ff6b00;
+            margin-bottom: 2px;
+        }
+
+        .item-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff6b00;
+            color: white;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 10px;
+        }
+
+        /* Kill Feed */
+        .kill-feed {
+            position: absolute;
+            top: 150px;
+            left: 15px;
+            width: 200px;
+            z-index: 10;
+        }
+
+        .kill-message {
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            color: white;
+            padding: 5px 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            border-left: 3px solid #ff6b00;
+            font-size: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        /* Chat */
+        .chat-panel {
+            position: absolute;
+            bottom: 250px;
+            left: 15px;
+            width: 200px;
+            z-index: 10;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 5px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 8px;
+            border-radius: 20px;
+            border: none;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            font-size: 12px;
+        }
+
+        .chat-input button {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            background: #ff6b00;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Sound Test Panel */
+        .sound-test-panel {
+            position: absolute;
+            bottom: 300px;
+            right: 15px;
+            width: 120px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            border-radius: 15px;
+            padding: 10px;
+            z-index: 20;
+            border: 2px solid #ff6b00;
+        }
+
+        .sound-test-title {
+            color: #ff6b00;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .sound-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+        }
+
+        .sound-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #ff6b00;
+            color: white;
+            padding: 5px;
+            border-radius: 8px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sound-btn:active {
+            background: #ff6b00;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        @keyframes load {
+            to { width: 100%; }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Splash Screen -->
+        <div class="splash-screen" id="splashScreen">
+            <div class="splash-content">
+                <div class="splash-logo">FF</div>
+                <div class="splash-title">FREE FIRE</div>
+                <div class="splash-subtitle">BATTLEGROUNDS</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Game Screen -->
+        <div class="game-screen" id="gameScreen" style="display: none;">
+            <!-- HUD Top -->
+            <div class="hud-top">
+                <div class="match-info">
+                    <span class="mode-badge">CLASSIC</span>
+                    <span class="players-alive" id="playersAlive">50</span>
+                    <span class="timer" id="timer">03:00</span>
+                </div>
+                <div class="mini-map" id="miniMap"></div>
+            </div>
+
+            <!-- Player Stats -->
+            <div class="player-stats">
+                <div class="stat-container">
+                    <div class="health-bar" id="healthBar"></div>
+                    <span class="stat-text" id="healthText">100/100</span>
+                </div>
+                <div class="stat-container">
+                    <div class="armor-bar" id="armorBar"></div>
+                    <span class="stat-text" id="armorText">100/100</span>
+                </div>
+            </div>
+
+            <!-- Weapons Panel -->
+            <div class="weapons-panel">
+                <div class="weapon-slot active" id="weapon1" onclick="selectWeapon(1)">
+                    <i class="fas fa-gun"></i>
+                    <span>M4A1</span>
+                    <span class="ammo-count" id="ammo1">30/90</span>
+                </div>
+                <div class="weapon-slot" id="weapon2" onclick="selectWeapon(2)">
+                    <i class="fas fa-gun"></i>
+                    <span>AK47</span>
+                    <span class="ammo-count" id="ammo2">30/60</span>
+                </div>
+                <div class="weapon-slot" id="weapon3" onclick="selectWeapon(3)">
+                    <i class="fas fa-shield"></i>
+                    <span>PAN</span>
+                </div>
+                <div class="weapon-slot" id="weapon4" onclick="throwGrenade()">
+                    <i class="fas fa-bomb"></i>
+                    <span>GRENADE</span>
+                    <span class="ammo-count" id="grenadeCount">2</span>
+                </div>
+            </div>
+
+            <!-- Inventory -->
+            <div class="inventory">
+                <div class="inventory-item" onclick="useItem('medkit')">
+                    <i class="fas fa-medkit"></i>
+                    <span>MED</span>
+                    <span class="item-count" id="medkitCount">3</span>
+                </div>
+                <div class="inventory-item" onclick="useItem('bandage')">
+                    <i class="fas fa-bandaid"></i>
+                    <span>BND</span>
+                    <span class="item-count" id="bandageCount">5</span>
+                </div>
+                <div class="inventory-item" onclick="useItem('energy')">
+                    <i class="fas fa-bolt"></i>
+                    <span>ENG</span>
+                    <span class="item-count" id="energyCount">2</span>
+                </div>
+            </div>
+
+            <!-- Kill Feed -->
+            <div class="kill-feed" id="killFeed"></div>
+
+            <!-- Chat -->
+            <div class="chat-panel">
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Message...">
+                    <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+
+            <!-- Sound Test Panel -->
+            <div class="sound-test-panel">
+                <div class="sound-test-title">🔊 SOUND TEST</div>
+                <div class="sound-buttons">
+                    <button class="sound-btn" onclick="playSound('m4a1')">M4A1</button>
+                    <button class="sound-btn" onclick="playSound('ak47')">AK47</button>
+                    <button class="sound-btn" onclick="playSound('awm')">AWM</button>
+                    <button class="sound-btn" onclick="playSound('reload')">Reload</button>
+                    <button class="sound-btn" onclick="playSound('footstep')">Footstep</button>
+                    <button class="sound-btn" onclick="playSound('grenade')">Grenade</button>
+                    <button class="sound-btn" onclick="playSound('medkit')">Medkit</button>
+                    <button class="sound-btn" onclick="playSound('death')">Death</button>
+                    <button class="sound-btn" onclick="playSound('victory')">Victory</button>
+                    <button class="sound-btn" onclick="playSound('matchStart')">Start</button>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="fire-btn" id="fireBtn" onmousedown="startFiring()" onmouseup="stopFiring()" ontouchstart="startFiring()" ontouchend="stopFiring()">
+                    <i class="fas fa-crosshairs"></i>
+                </button>
+                <button class="action-btn" onclick="jump()">
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+                <button class="action-btn" onclick="toggleCrouch()">
+                    <i class="fas fa-angle-double-down"></i>
+                </button>
+                <button class="action-btn" onclick="reload()">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+
+            <!-- Movement Pad -->
+            <div class="movement-pad">
+                <div class="move-zone">
+                    <button class="move-btn move-up" onmousedown="startMoving('up')" onmouseup="stopMoving()" ontouchstart="startMoving('up')" ontouchend="stopMoving()">
+                        <i class="fas fa-arrow-up"></i>
+                    </button>
+                    <button class="move-btn move-left" onmousedown="startMoving('left')" onmouseup="stopMoving()" ontouchstart="startMoving('left')" ontouchend="stopMoving()">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <button class="move-btn move-down" onmousedown="startMoving('down')" onmouseup="stopMoving()" ontouchstart="startMoving('down')" ontouchend="stopMoving()">
+                        <i class="fas fa-arrow-down"></i>
+                    </button>
+                    <button class="move-btn move-right" onmousedown="startMoving('right')" onmouseup="stopMoving()" ontouchstart="startMoving('right')" ontouchend="stopMoving()">
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script>
+        // ============================================
+        // COMPLETE FREE FIRE SOUND SYSTEM
+        // All sounds generated programmatically
+        // ============================================
+        class FreeFireSoundSystem {
+            constructor() {
+                this.audioContext = null;
+                this.isMuted = false;
+                this.masterVolume = 0.7;
+                this.sounds = {};
+                this.activeSounds = new Set();
+                this.initAudio();
+            }
+
+            async initAudio() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    await this.audioContext.resume();
+                    this.loadAllSounds();
+                    console.log('Audio system initialized');
+                } catch (e) {
+                    console.error('Audio initialization failed:', e);
+                }
+            }
+
+            // Create oscillator with envelope
+            createTone(frequency, startTime, duration, type = 'sine', volume = 0.3) {
+                if (!this.audioContext) return null;
+
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                oscillator.type = type;
+                oscillator.frequency.setValueAtTime(frequency, startTime);
+                
+                gainNode.gain.setValueAtTime(0, startTime);
+                gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                return { oscillator, gainNode };
+            }
+
+            // Create noise (for gunshots, explosions)
+            createNoise(duration, startTime, volume = 0.3) {
+                if (!this.audioContext) return null;
+
+                const bufferSize = this.audioContext.sampleRate * duration;
+                const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+                const data = buffer.getChannelData(0);
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                
+                const noise = this.audioContext.createBufferSource();
+                noise.buffer = buffer;
+                
+                const gainNode = this.audioContext.createGain();
+                gainNode.gain.setValueAtTime(volume, startTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+                
+                noise.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                return noise;
+            }
+
+            // Load all sounds
+            loadAllSounds() {
+                // M4A1 Gunshot
+                this.sounds.m4a1 = (time) => {
+                    const startTime = time || this.audioContext.currentTime;
+                    for (let i = 0; i < 3; i++) {
+                        const osc = this.createTone(400 + i * 100, startTime + i * 0.02, 0.1, 'sawtooth', 0.2);
+                        if (osc) osc.oscillator.start(startTime + i * 0.02);
+                    }
+                    const noise = this.createNoise(0.15, startTime, 0.3);
+                    if (noise) noise.start(startTime);
+                };
+
+                // AK47 Gunshot (deeper)
+                this.sounds.ak47 = (time) => {
+                    const startTime = time || this.audioContext.currentTime;
+                    for (let i = 0; i < 3; i++) {
+                        const osc = this.createTone(200 + i * 50, startTime + i * 0.03, 0.15, 'sawtooth', 0.3);
+                        if (osc) osc.oscillator.start(startTime + i * 0.03);
+                    }
+                    const noise = this.createNoise(0.2, startTime, 0.4);
+                    if (noise) noise.start(startTime);
+                };
+
+                // AWM Sniper (loud, deep)
+                this.sounds.awm = (time) => {
+                    const startTime = time || this.audioContext.currentTime;
+                    const osc1 = this.createTone(150, startTime, 0.4, 'sawtooth', 0.4);
+                    const osc2 = this.createTone(300, startTime, 0.3, 'sine', 0.2);
+                    if (osc1) osc1.oscillator.start(startTime);
+                    if (osc2) osc2.oscillator.start(startTime);
+                    const noise = this.createNoise(0.5, startTime, 0.5);
+                    if (noise) noise.start(startTime);
+                };
+
+                // Reload Sound
+                this.sounds.reload = (time) => {
+                    const startTime = time || this.audioContext.currentTime;
+                    for (let i = 0; i < 5; i++) {
+                        const osc = this.createTone(300 + i * 50, startTime + i * 0.1, 0.05, 'sine', 0.2);
+                        if (osc) osc.oscillator.start(startTime + i * 0.1);
+                    }
+                };
+
+                // Footstep
+                this.sounds.footstep = (time) => {
+                    const startTime = time || this.audioContext.currentTime;
+                    const osc = this.createTone(200, startTime, 0.05, 'sine', 0.1);
+                    if (osc) osc.oscillator.start(startTime);
+                };
+
+                // Grenade Explosion
+                this.sounds.grenade = (time) => {
+                    const startTime = time || this.audioContext.currentTime;
+                    
+                    // Fuse
+                    for (let i = 0; i < 3; i++) {
+                        const fuse = this.createTone(100 + i * 50, startTime + i * 0.2, 0.05, 'sine', 0.1);
+                        if (fuse) fuse.oscillator.start(startTime + i * 0.2);
+                    }
+                    
+                    // Explosion
+                    setTimeout(() => {
+                        const boomTime = this.audioContext.currentTime;
+                        const noise = this.createNoise(0.8, boomTime, 0.7);
+                        if (noise) noise.start(boomTime);
+                        
+                        const lowOsc = this.createTone(80, boomTime, 0.6, 'sawtooth', 0.5);
+                        if (lowOsc) lowOsc.oscillator.start(boomTime);
+                        
+                        for (let i = 0; i < 5; i++) {
+                            const debris = this.createTone(200 + i * 100, boomTime + 0.2 + i * 0.05, 0.1, 'sine', 0.2);
+                            if (debris) debris.oscillator.start(boomTime + 0.2 + i * 0.05);
+                        }
+                    }, 600);
+                };
+
+                // Medkit Healing
+                this.sounds.medkit = (time) => {
+                    const startTime = time || this.audioContext.currentTime;
+                    for (let i = 0; i < 5; i++) {
+                        const osc = this.createTone(600 + i * 100, startTime + i * 0.1, 0.2, 'sine', 0.2);
+                        if (osc) osc.oscillator.start(startTime + i * 0.1);
+                    }
+                };
+
+                // Death Sound
+                this.sounds.death = (time) => {
+                    const startTime = time || this.audioContext.currentTime;
+                    
+                    // Scream down
+                    const osc1 = this.createTone(800, startTime, 0.3, 'sawtooth', 0.3);
+                    if (osc1) {
+                        osc1.oscillator.frequency.exponentialRampToValueAtTime(200, startTime + 0.3);
+                        osc1.oscillator.start(startTime);
+                    }
+                    
+                    // Heartbeat
+                    for (let i = 0; i < 3; i++) {
+                        const heart = this.createTone(100, startTime + i * 0.3, 0.1, 'sine', 0.2);
+                        if (heart) heart.oscillator.start(startTime + i * 0.3);
+                    }
+                    
+                    // Final thud
+                    const thud = this.createTone(60, startTime + 0.9, 0.2, 'triangle', 0.4);
+                    if (thud) thud.oscillator.start(startTime + 0.9);
+                };
+
+                // Victory Sound (Booyah!)
+                this.sounds.victory = (time) => {
+                    const startTime = time || this.audioContext.currentTime;
+                    const notes = [400, 500, 600, 800, 1000, 1200, 1500];
+                    
+                    notes.forEach((note, index) => {
+                        setTimeout(() => {
+                            const osc = this.createTone(note, this.audioContext.currentTime, 0.2, 'sine', 0.3);
+                            if (osc) osc.oscillator.start();
+                        }, index * 150);
+                    });
+                };
+
+                // Match Start
+                this.sounds.matchStart = (time) => {
+                    const startTime = time || this.audioContext.currentTime;
+                    
+                    // Countdown beeps
+                    for (let i = 0; i < 3; i++) {
+                        const beep = this.createTone(600, startTime + i, 0.1, 'sine', 0.3);
+                        if (beep) beep.oscillator.start(startTime + i);
+                    }
+                    
+                    // Final long beep
+                    setTimeout(() => {
+                        const final = this.createTone(800, this.audioContext.currentTime, 0.5, 'sine', 0.5);
+                        if (final) final.oscillator.start();
+                    }, 3000);
+                };
+
+                // Plane Flyby
+                this.sounds.plane = (time) => {
+                    const startTime = time || this.audioContext.currentTime;
+                    const osc = this.audioContext.createOscillator();
+                    const gain = this.audioContext.createGain();
+                    
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(200, startTime);
+                    osc.frequency.exponentialRampToValueAtTime(400, startTime + 2);
+                    
+                    gain.gain.setValueAtTime(0.3, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, startTime + 2);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.audioContext.destination);
+                    
+                    osc.start(startTime);
+                    osc.stop(startTime + 2);
+                };
+
+                // Parachute
+                this.sounds.parachute = (time) => {
+                    const startTime = time || this.audioContext.currentTime;
+                    const noise = this.createNoise(2, startTime, 0.2);
+                    if (noise) noise.start(startTime);
+                    
+                    for (let i = 0; i < 5; i++) {
+                        const flutter = this.createTone(100 + i * 20, startTime + i * 0.4, 0.1, 'sine', 0.1);
+                        if (flutter) flutter.oscillator.start(startTime + i * 0.4);
+                    }
+                };
+            }
+
+            // Play a sound
+            play(soundName) {
+                if (this.isMuted || !this.audioContext) return;
+                
+                if (this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+                
+                if (this.sounds[soundName]) {
+                    this.sounds[soundName]();
+                    
+                    // Add to kill feed for visual feedback
+                    addKillMessage(`🔊 Sound: ${soundName.toUpperCase()}`);
+                }
+            }
+
+            // Play looping sound (footsteps)
+            startLoop(soundName) {
+                if (this.isMuted || !this.audioContext) return;
+                
+                if (soundName === 'footstep') {
+                    if (this.activeSounds.has('footstep')) return;
+                    
+                    this.activeSounds.add('footstep');
+                    
+                    const playStep = () => {
+                        if (!this.activeSounds.has('footstep')) return;
+                        
+                        this.sounds.footstep();
+                        
+                        setTimeout(playStep, 300);
+                    };
+                    
+                    playStep();
+                }
+            }
+
+            stopLoop(soundName) {
+                this.activeSounds.delete(soundName);
+            }
+
+            toggleMute() {
+                this.isMuted = !this.isMuted;
+                return this.isMuted;
+            }
+
+            setVolume(volume) {
+                this.masterVolume = Math.max(0, Math.min(1, volume));
+            }
+        }
+
+        // ============================================
+        // GAME STATE
+        // ============================================
+        let soundSystem;
+        let gameState = {
+            health: 100,
+            maxHealth: 100,
+            armor: 100,
+            maxArmor: 100,
+            kills: 0,
+            playersAlive: 50,
+            time: 180,
+            currentWeapon: 1,
+            ammo: {
+                weapon1: 30,
+                weapon1Total: 90,
+                weapon2: 30,
+                weapon2Total: 60
+            },
+            inventory: {
+                medkit: 3,
+                bandage: 5,
+                energy: 2,
+                grenade: 2
+            },
+            isMoving: false,
+            isFiring: false,
+            isCrouching: false
+        };
+
+        let moveDirection = null;
+        let gameTimer = null;
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        window.onload = function() {
+            // Initialize sound system
+            soundSystem = new FreeFireSoundSystem();
+            
+            // Simulate loading
+            setTimeout(() => {
+                document.getElementById('splashScreen').style.display = 'none';
+                document.getElementById('gameScreen').style.display = 'block';
+                
+                // Start game timer
+                startGameTimer();
+                
+                // Play match start sound
+                setTimeout(() => {
+                    soundSystem.play('matchStart');
+                }, 500);
+                
+                // Update UI
+                updateUI();
+            }, 2500);
+        };
+
+        // ============================================
+        // SOUND FUNCTIONS
+        // ============================================
+        function playSound(soundName) {
+            if (soundSystem) {
+                soundSystem.play(soundName);
+            }
+        }
+
+        function startFiring() {
+            gameState.isFiring = true;
+            fireWeapon();
+        }
+
+        function stopFiring() {
+            gameState.isFiring = false;
+        }
+
+        function fireWeapon() {
+            if (!gameState.isFiring) return;
+            
+            let weaponName = gameState.currentWeapon === 1 ? 'm4a1' : 'ak47';
+            let currentAmmo = gameState.currentWeapon === 1 ? gameState.ammo.weapon1 : gameState.ammo.weapon2;
+            
+            if (currentAmmo > 0) {
+                playSound(weaponName);
+                
+                // Reduce ammo
+                if (gameState.currentWeapon === 1) {
+                    gameState.ammo.weapon1--;
+                } else {
+                    gameState.ammo.weapon2--;
+                }
+                
+                // Add to kill feed
+                addKillMessage(`🔫 You fired ${gameState.currentWeapon === 1 ? 'M4A1' : 'AK47'}`);
+                
+                // Update UI
+                updateAmmoDisplay();
+                
+                // Random enemy hit (simulation)
+                if (Math.random() > 0.7) {
+                    gameState.kills++;
+                    addKillMessage(`🎯 You eliminated an enemy`);
+                    updatePlayersAlive();
+                }
+                
+                // Continue firing
+                setTimeout(fireWeapon, 150);
+            } else {
+                // Out of ammo
+                playSound('reload');
+                addKillMessage(`⚠️ Out of ammo!`);
+                gameState.isFiring = false;
+            }
+        }
+
+        function reload() {
+            playSound('reload');
+            
+            if (gameState.currentWeapon === 1) {
+                let needed = 30 - gameState.ammo.weapon1;
+                let available = Math.min(needed, gameState.ammo.weapon1Total);
+                gameState.ammo.weapon1 += available;
+                gameState.ammo.weapon1Total -= available;
+            } else {
+                let needed = 30 - gameState.ammo.weapon2;
+                let available = Math.min(needed, gameState.ammo.weapon2Total);
+                gameState.ammo.weapon2 += available;
+                gameState.ammo.weapon2Total -= available;
+            }
+            
+            updateAmmoDisplay();
+            addKillMessage(`🔄 Reloaded`);
+        }
+
+        function throwGrenade() {
+            if (gameState.inventory.grenade > 0) {
+                gameState.inventory.grenade--;
+                playSound('grenade');
+                addKillMessage(`💥 Grenade thrown!`);
+                
+                // Random kills from grenade
+                let kills = Math.floor(Math.random() * 3);
+                if (kills > 0) {
+                    gameState.kills += kills;
+                    addKillMessage(`💀 Grenade killed ${kills} enemies`);
+                    updatePlayersAlive();
+                }
+                
+                updateInventoryDisplay();
+            }
+        }
+
+        function useItem(item) {
+            if (item === 'medkit' && gameState.inventory.medkit > 0 && gameState.health < gameState.maxHealth) {
+                gameState.inventory.medkit--;
+                gameState.health = Math.min(gameState.maxHealth, gameState.health + 50);
+                playSound('medkit');
+                addKillMessage(`❤️ Used medkit`);
+            } else if (item === 'bandage' && gameState.inventory.bandage > 0 && gameState.health < gameState.maxHealth) {
+                gameState.inventory.bandage--;
+                gameState.health = Math.min(gameState.maxHealth, gameState.health + 10);
+                playSound('medkit');
+                addKillMessage(`🩹 Used bandage`);
+            } else if (item === 'energy' && gameState.inventory.energy > 0) {
+                gameState.inventory.energy--;
+                playSound('medkit');
+                addKillMessage(`⚡ Used energy drink`);
+            }
+            
+            updateHealthDisplay();
+            updateInventoryDisplay();
+        }
+
+        // ============================================
+        // MOVEMENT FUNCTIONS
+        // ============================================
+        function startMoving(direction) {
+            gameState.isMoving = true;
+            moveDirection = direction;
+            soundSystem.startLoop('footstep');
+        }
+
+        function stopMoving() {
+            gameState.isMoving = false;
+            soundSystem.stopLoop('footstep');
+        }
+
+        function jump() {
+            playSound('footstep');
+            addKillMessage(`🦘 Jumped`);
+        }
+
+        function toggleCrouch() {
+            gameState.isCrouching = !gameState.isCrouching;
+            addKillMessage(gameState.isCrouching ? `🔽 Crouching` : `🔼 Standing`);
+        }
+
+        // ============================================
+        // WEAPON FUNCTIONS
+        // ============================================
+        function selectWeapon(weaponNum) {
+            gameState.currentWeapon = weaponNum;
+            
+            // Update UI
+            document.querySelectorAll('.weapon-slot').forEach(slot => {
+                slot.classList.remove('active');
+            });
+            document.getElementById(`weapon${weaponNum}`).classList.add('active');
+            
+            addKillMessage(`🔫 Switched to ${weaponNum === 1 ? 'M4A1' : weaponNum === 2 ? 'AK47' : 'Pan'}`);
+            updateAmmoDisplay();
+        }
+
+        // ============================================
+        // UI UPDATE FUNCTIONS
+        // ============================================
+        function updateUI() {
+            updateHealthDisplay();
+            updateAmmoDisplay();
+            updateInventoryDisplay();
+            updatePlayersAlive();
+        }
+
+        function updateHealthDisplay() {
+            let healthPercent = (gameState.health / gameState.maxHealth) * 100;
+            let armorPercent = (gameState.armor / gameState.maxArmor) * 100;
+            
+            document.getElementById('healthBar').style.width = healthPercent + '%';
+            document.getElementById('armorBar').style.width = armorPercent + '%';
+            document.getElementById('healthText').innerText = `${gameState.health}/${gameState.maxHealth}`;
+            document.getElementById('armorText').innerText = `${gameState.armor}/${gameState.maxArmor}`;
+        }
+
+        function updateAmmoDisplay() {
+            document.getElementById('ammo1').innerText = `${gameState.ammo.weapon1}/${gameState.ammo.weapon1Total}`;
+            document.getElementById('ammo2').innerText = `${gameState.ammo.weapon2}/${gameState.ammo.weapon2Total}`;
+        }
+
+        function updateInventoryDisplay() {
+            document.getElementById('medkitCount').innerText = gameState.inventory.medkit;
+            document.getElementById('bandageCount').innerText = gameState.inventory.bandage;
+            document.getElementById('energyCount').innerText = gameState.inventory.energy;
+            document.getElementById('grenadeCount').innerText = gameState.inventory.grenade;
+        }
+
+        function updatePlayersAlive() {
+            gameState.playersAlive = Math.max(1, 50 - gameState.kills);
+            document.getElementById('playersAlive').innerText = gameState.playersAlive;
+            
+            if (gameState.playersAlive === 1) {
+                victory();
+            }
+        }
+
+        function addKillMessage(message) {
+            const killFeed = document.getElementById('killFeed');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'kill-message';
+            msgDiv.innerText = message;
+            
+            killFeed.insertBefore(msgDiv, killFeed.firstChild);
+            
+            if (killFeed.children.length > 5) {
+                killFeed.removeChild(killFeed.lastChild);
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            if (input.value.trim()) {
+                addKillMessage(`💬 You: ${input.value}`);
+                input.value = '';
+            }
+        }
+
+        function startGameTimer() {
+            gameTimer = setInterval(() => {
+                gameState.time--;
+                
+                let minutes = Math.floor(gameState.time / 60);
+                let seconds = gameState.time % 60;
+                document.getElementById('timer').innerText = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (gameState.time <= 0) {
+                    clearInterval(gameTimer);
+                    addKillMessage(`⏰ Zone closing!`);
+                    
+                    // Zone damage
+                    gameState.health -= 20;
+                    updateHealthDisplay();
+                    
+                    if (gameState.health <= 0) {
+                        death();
+                    }
+                }
+            }, 1000);
+        }
+
+        function death() {
+            playSound('death');
+            addKillMessage(`💀 YOU DIED - Rank #${Math.floor(Math.random() * 20) + 1}`);
+            
+            setTimeout(() => {
+                if (confirm('Game Over! Return to lobby?')) {
+                    resetGame();
+                }
+            }, 2000);
+        }
+
+        function victory() {
+            playSound('victory');
+            addKillMessage(`🏆 BOOYAH! WINNER WINNER CHICKEN DINNER!`);
+            
+            setTimeout(() => {
+                if (confirm('Victory! Play again?')) {
+                    resetGame();
+                }
+            }, 3000);
+        }
+
+        function resetGame() {
+            gameState = {
+                health: 100,
+                maxHealth: 100,
+                armor: 100,
+                maxArmor: 100,
+                kills: 0,
+                playersAlive: 50,
+                time: 180,
+                currentWeapon: 1,
+                ammo: {
+                    weapon1: 30,
+                    weapon1Total: 90,
+                    weapon2: 30,
+                    weapon2Total: 60
+                },
+                inventory: {
+                    medkit: 3,
+                    bandage: 5,
+                    energy: 2,
+                    grenade: 2
+                },
+                isMoving: false,
+                isFiring: false,
+                isCrouching: false
+            };
+            
+            updateUI();
+            addKillMessage(`🎮 New match started`);
+        }
+
+        // Handle user interaction for audio
+        document.addEventListener('click', function initAudio() {
+            if (soundSystem && soundSystem.audioContext) {
+                soundSystem.audioContext.resume();
+            }
+        }, { once: true });
+    </script>
+</body>
+  </html>
