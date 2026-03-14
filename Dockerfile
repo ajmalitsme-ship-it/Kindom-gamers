@@ -15,9 +15,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy bot files
-COPY bot.py .
-COPY config.py .
-COPY database.py .
+COPY index.html .
 
 # Create necessary directories
 RUN mkdir -p logs data temp fonts
