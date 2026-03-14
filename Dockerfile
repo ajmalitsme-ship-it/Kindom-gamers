@@ -1,21 +1,8 @@
-# Dockerfile
-FROM python:3.9-slim
+# Use nginx to serve static HTML
+FROM nginx:alpine
 
-WORKDIR /app
+# Copy your HTML file to nginx web root
+COPY index.html /usr/share/nginx/html/index.html
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy bot files
-COPY index.html .
-
-# Create necessary directories
-RUN mkdir -p logs data temp fonts
-
-# Run bot
-CMD ["python", "index.html"]
+# Expose port 80
+EXPOSE 80
